@@ -126,4 +126,6 @@ problem inside the `Transformer`, perhaps shuffling the invalid lines
 into a file somewhere.
 
 The end-use of this transformed data is unspecified and so we simply
-dump it out into a file as a sequence of python lists.
+dump it out into a file as a sequence of python lists. In a more
+realistic setting we might do some data aggregation on them or forward
+them to a database.
