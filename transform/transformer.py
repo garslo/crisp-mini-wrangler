@@ -16,12 +16,15 @@ class Transformer(object):
         new_row = [None]*len(self.columns)
         for transformation in self.transformations:
             for (column, index) in self.columns.items():
+                # fill in the row-to-be-transformed with data if we
+                # have it
                 if index >= len(row):
                     labelled_row[column] = new_row[index]
                 else:
                     labelled_row[column] = row[index]
             delta = transformation.transform_row(labelled_row)
             for column in delta:
+                # back-fill the columns that changed into the new_row
                 index = self.columns[column]
                 new_row[index] = delta[column]
         return new_row
