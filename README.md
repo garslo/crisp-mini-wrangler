@@ -27,6 +27,8 @@ In more detail:
 ```
 $ python --version
 Python 2.7.10
+
+
 $ python -m unittest -v test
 test_column_gets_added (test.TestNewColumn) ... ok
 test_rows_get_values_added_to_new_columns (test.TestNewColumn) ... ok
@@ -42,6 +44,8 @@ test_we_can_do_row_transformations (test.TestTransformer) ... ok
 Ran 9 tests in 0.003s
 
 OK
+
+
 $ python main.py -h
 usage: main.py [-h] [--data-file DATA_FILE] [--output-file OUTPUT_FILE] [--spec-file SPEC_FILE]
 
@@ -53,11 +57,15 @@ optional arguments:
                         raw dump of transformed rows in python-ish syntax (default: out.dat)
   --spec-file SPEC_FILE
                         file containing transformation spec (default: spec.py)
+
+
 $ python main.py --data-file ./data.csv --spec-file ./spec.py
 Could not transform row=['lkdsjaf'] reason='row does not have enough columns'
 Could not transform row=['1001', '2017', '1c', '12', 'P-10002', 'Iceberg lettuce', '500.00', 'Lorem', 'Ipsum'] reason='expected to parse 2017-1c-12 as datetime'
 Could not transform row=[] reason='row does not have enough columns'
 Could not transform row=['1001', '2017', '12', '12', 'P-10002', 'Iceberg lettuce', '500.004f', 'Lorem', 'Ipsum'] reason='expected to parse 500.004f as big_decimal'
+
+
 $ cat out.dat
 [1000, datetime.datetime(2018, 1, 1, 0, 0), 'P-10001', 'Arugola', Decimal('5'), 'kg']
 [1001, datetime.datetime(2017, 12, 12, 0, 0), 'P-10002', 'Iceberg lettuce', Decimal('500.00'), 'kg']
