@@ -108,8 +108,10 @@ the dataset's columns, rows, or both.
 The set of transformations is orchestrated by the `Transformer` class
 found in `transformations/transfomer.py`. I'm not completely happy
 with the `transform_row()` method as it creates a dummy `new_row`
-filled with `None`s. These `Nones` tend to pop up in annoying
-spots. In a real project I would like to tidy this up.
+filled with `None`s. These `Nones` tend to pop up in annoying spots
+and we end up holding more data in-hand than required. In a real
+project I would like to tidy this up.
+
 
 ## Running and Collecting
 
