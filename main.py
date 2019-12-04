@@ -3,14 +3,17 @@ from transform.transformer import Transformer
 import argparse
 import csv
 
-parser = argparse.ArgumentParser()
+def read_spec_file(filename):
+    with open(filename, "r") as fh:
+        return eval(compile(fh.read(), args.spec_file, "eval"))
+
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-file", default="data.csv", help="csv file containing data to transform")
 parser.add_argument("--output-file", default="out.dat", help="raw dump of transformed rows in python-ish syntax")
 parser.add_argument("--spec-file", default="spec.py", help="file containing transformation spec")
 args = parser.parse_args()
 
-with open(args.spec_file, "r") as fh:
-    data = eval(compile(fh.read(), args.spec_file, "eval"))
 
 out_file = open(args.output_file, "w")
 
@@ -18,6 +21,8 @@ def dump_row(row):
     out_file.write(str(row))
     out_file.write("\n")
 
+
+data = read_spec_file(args.spec_file)
 transformer = Transformer(data["column_names"], data["transformations"])
 transformer.transform_columns()
 

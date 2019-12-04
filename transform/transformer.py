@@ -10,6 +10,8 @@ class Transformer(object):
 
     def transform_row(self, row):
         row = row[:self.num_columns]
+        if len(row) < self.num_columns:
+            raise Exception("row does not have enough columns")
         labelled_row = {}
         new_row = [None]*len(self.columns)
         for transformation in self.transformations:
@@ -18,7 +20,7 @@ class Transformer(object):
                     labelled_row[column] = new_row[index]
                 else:
                     labelled_row[column] = row[index]
-                    delta = transformation.transform_row(labelled_row)
+            delta = transformation.transform_row(labelled_row)
             for column in delta:
                 index = self.columns[column]
                 new_row[index] = delta[column]
