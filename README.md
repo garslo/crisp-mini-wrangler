@@ -94,10 +94,10 @@ method.
 ## Data and Transformation Specification
 
 The data and desired transformations on them are described in a
-python-based DSL. It's a bit clever and brings with it all that
-entails. I would use yaml or json for a more robust solution, however
-the former requires external dependencies and the latter is more
-verbose than I wanted.
+python-based DSL. It's a bit "clever" and brings with it all that
+entails - easy but abusable. I would use yaml or json for a more
+robust solution, however the former requires external dependencies and
+the latter is more verbose than I wanted.
 
 ## Data Transformations
 
