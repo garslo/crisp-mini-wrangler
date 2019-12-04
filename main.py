@@ -1,66 +1,33 @@
-from operations import *
-from transform import Transformer
+from transform.operations import *
+from transform.transformer import Transformer
 import argparse
 import csv
 
-
-columns = {
-    "Order Number": 0,
-    "Year": 1,
-    "Month": 2,
-    "Day": 3,
-    "Product Number": 4,
-    "Product Name": 5,
-    "Count": 6,
-    "Extra Col1": 7,
-    "Extra Col2": 8
-}
-
-transformations = [
-    Rename(
-        from_name="Order Number",
-        to_name="OrderID"
-    ),
-    ParseInt(
-        column="OrderID"
-    ),
-    NewColumn(
-        name="OrderDate",
-        from_columns=["Year", "Month", "Day"],
-        value_format="{}-{}-{}"
-    ),
-    ParseSimpleDatetime(
-        column="OrderDate"
-    ),
-    Rename(
-        from_name="Product Number",
-        to_name="ProductId"
-    ),
-    Rename(
-        from_name="Product Name",
-        to_name="ProductName"
-    ),
-    Rename(
-        from_name="Count",
-        to_name="Quantity"
-    ),
-    NewColumn(
-        name="Unit",
-        from_columns=None,
-        value_format="kg"
-    )
-]
-
-transformer = Transformer(columns, transformations)
-
-transformer.transform_columns()
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-file", default="data.csv", help="csv file containing data to transform")
-
+parser.add_argument("--output-file", default="out.dat", help="raw dump of transformed rows in python-ish syntax")
+parser.add_argument("--spec-file", default="spec.py", help="file containing transformation spec")
 args = parser.parse_args()
+
+with open(args.spec_file, "r") as fh:
+    data = eval(compile(fh.read(), args.spec_file, "eval"))
+
+out_file = open(args.output_file, "w")
+
+def dump_row(row):
+    out_file.write(str(row))
+    out_file.write("\n")
+
+transformer = Transformer(data["column_names"], data["transformations"])
+transformer.transform_columns()
+
 with open(args.data_file, "rb") as fh:
     reader = csv.reader(fh)
     for row in reader:
-        transformed = transformer.transform_row(row)
-        print transformer.get(transformed, ["OrderID", "OrderDate", "ProductId", "ProductName", "Quantity", "Unit"])
+        try:
+            transformed = transformer.transform_row(row)
+            dump_row(transformer.get(transformed, data["output_columns"]))
+        except Exception as e:
+            print "Could not transform row={} reason='{}'".format(str(row), str(e))
+
+out_file.close()

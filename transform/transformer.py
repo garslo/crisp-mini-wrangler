@@ -1,12 +1,15 @@
 class Transformer(object):
-    def __init__(self, columns, transformations):
-        self.__dict__.update(locals())
+    def __init__(self, column_names, transformations):
+        self.transformations = transformations
+        self.num_columns = len(column_names)
+        self.columns = dict(zip(column_names, range(0, self.num_columns)))
 
     def transform_columns(self):
         for transformation in self.transformations:
             self.columns = transformation.transform_columns(self.columns)
 
     def transform_row(self, row):
+        row = row[:self.num_columns]
         labelled_row = {}
         new_row = [None]*len(self.columns)
         for transformation in self.transformations:
@@ -15,11 +18,10 @@ class Transformer(object):
                     labelled_row[column] = new_row[index]
                 else:
                     labelled_row[column] = row[index]
-            transformed_row = transformation.transform_row(labelled_row)
-            for column in transformed_row:
-                if transformed_row[column] is not None:
-                    index = self.columns[column]
-                    new_row[index] = transformed_row[column]
+                    delta = transformation.transform_row(labelled_row)
+            for column in delta:
+                index = self.columns[column]
+                new_row[index] = delta[column]
         return new_row
 
     def get(self, row, columns):

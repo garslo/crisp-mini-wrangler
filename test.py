@@ -1,6 +1,6 @@
 import unittest
-from operations import *
-from transform import *
+from transform.operations import *
+from transform.transformer import *
 from datetime import datetime
 
 
@@ -70,11 +70,11 @@ class TestParse(unittest.TestCase):
 
 class TestTransformer(unittest.TestCase):
     def setUp(self):
-        self.initial_columns = {"foo":0, "baz":1}
+        self.initial_columns = ["foo", "baz"]
 
     def test_we_can_do_column_transformations(self):
         transformations = [Rename("foo", "bar"), Rename("baz", "zip")]
-        transformer = Transformer(self.initial_columns, [], transformations)
+        transformer = Transformer(self.initial_columns, transformations)
         transformer.transform_columns()
         self.assertEqual(
             transformer.columns,
@@ -82,55 +82,72 @@ class TestTransformer(unittest.TestCase):
         )
 
     def test_we_can_do_row_transformations(self):
-        transformations = [NewColumn("new", None, "new value")]
+        transformations = [NewColumn("new", ["foo", "baz"], "{} {} new value")]
         transformer = Transformer(
             self.initial_columns,
-            [[1, 2], [3, 4]],
             transformations
         )
         transformer.transform_columns()
-        transformer.transform_rows()
-        self.assertEqual(
-            transformer.rows,
-            [[1, 2, "new value"], [3, 4, "new value"]],
-        )
+        row = transformer.transform_row([1,2])
+        self.assertEqual(row[2], "1 2 new value")
 
     def test_crisp_transformation(self):
         transformations = [
             Rename("Order Number", "OrderID"),
+            ParseInt("OrderID"),
             NewColumn("OrderDate", ["Year", "Month", "Day"], "{}-{}-{}"),
             ParseSimpleDatetime("OrderDate"),
             Rename("Product Number", "ProductId"),
+            ParseString("ProductId"),
             Rename("Product Name", "ProductName"),
             Rename("Count", "Quantity"),
+            ParseBigDecimal("Quantity"),
             NewColumn("Unit", None, "kg")
         ]
 
-        columns = {
-            "Order Number": 0,
-            "Year": 1,
-            "Month": 2,
-            "Day": 3,
-            "Product Number": 4,
-            "Product Name": 5,
-            "Count": 6,
-            "Extra Col1": 7,
-            "Extra Col2": 8
-        }
-
-        rows = [
-            ["1", "2019", "12", "2", "443", "Food Thing", "88", "asdjkfd", "al;ksdfj"],
-            ["2", "2019", "12", "5", "444", "Food Thing 2", "884", "asdjkfd", "al;ksdfj"]
+        columns = [
+            "Order Number",
+            "Year",
+            "Month",
+            "Day",
+            "Product Number",
+            "Product Name",
+            "Count",
+            "Extra Col1",
+            "Extra Col2"
         ]
 
-        transformer = Transformer(columns, rows, transformations)
+        columns_we_want = [
+            "OrderID",
+            "OrderDate",
+            "ProductId",
+            "ProductName",
+            "Quantity",
+            "Unit"
+        ]
+
+        rows = [
+            ["1000","2018","1","1","P-10001","Arugola","5","250.50","Lorem","Ipsum",""],
+            ["1001","2017","12","12","P-10002","Iceberg lettuce","500.00","Lorem","Ipsum"]
+        ]
+
+        transformer = Transformer(columns, transformations)
         transformer.transform_columns()
         result = []
-        for row in rows:
-            result.append(transformer.transform_row(row))
 
-        # row = transformer.get(row, columns=["OrderID", "OrderDate", "ProductId", "ProductName", "Quantity", "Unit"])
+        transformed = transformer.transform_row(rows[0])
+        result = transformer.get(transformed, columns_we_want)
+        self.assertEqual(
+            result,
+            [1000, datetime(2018, 1, 1, 0, 0), 'P-10001', 'Arugola', Decimal('5'), 'kg']
+        )
 
+        transformed = transformer.transform_row(rows[1])
+        result = transformer.get(transformed, columns_we_want)
+        self.assertEqual(
+            result,
+            [1001, datetime(2017, 12, 12, 0, 0), 'P-10002', 'Iceberg lettuce', Decimal('500.00'), 'kg']
+        )
 
 
 if __name__ == "__main__":
